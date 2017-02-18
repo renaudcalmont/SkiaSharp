@@ -1,4 +1,12 @@
 
+var RunPython = new Action<string, string> ((args, wd) =>
+{
+    RunProcess ("python", new ProcessSettings {
+        Arguments = args,
+        WorkingDirectory = wd,
+    });
+});
+
 var RunGyp = new Action<string, string> ((defines, generators) =>
 {
     SetEnvironmentVariable ("GYP_GENERATORS", generators);
@@ -8,10 +16,7 @@ var RunGyp = new Action<string, string> ((defines, generators) =>
     Information ("\tGYP_GENERATORS = " + EnvironmentVariable ("GYP_GENERATORS"));
     Information ("\tGYP_DEFINES = " + EnvironmentVariable ("GYP_DEFINES"));
     
-    RunProcess ("python", new ProcessSettings {
-        Arguments = SKIA_PATH.CombineWithFilePath("bin/sync-and-gyp").FullPath,
-        WorkingDirectory = SKIA_PATH.FullPath,
-    });
+    RunPython (SKIA_PATH.CombineWithFilePath("bin/sync-and-gyp").FullPath, SKIA_PATH.FullPath);
 });
 
 var RunInstallNameTool = new Action<DirectoryPath, string, string, FilePath> ((directory, oldName, newName, library) =>

@@ -72,6 +72,13 @@ var InjectCompatibilityExternals = new Action<bool> ((inject) => {
 // EXTERNALS - the native C and C++ libraries
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+Task ("externals-init")
+    .Does (() => 
+{
+    AppendEnvironmentVariable ("PATH", DEPOT_PATH.FullPath);
+
+});
+
 // this builds the managed PCL external 
 Task ("externals-genapi")
     .Does (() => 
@@ -95,6 +102,7 @@ Task ("externals-genapi")
 
 // this builds the native C and C++ externals 
 Task ("externals-native")
+    .IsDependentOn ("externals-init")
     .IsDependentOn ("externals-uwp")
     .IsDependentOn ("externals-windows")
     .IsDependentOn ("externals-osx")
@@ -151,6 +159,7 @@ Task ("externals-native")
 
 // this builds the native C and C++ externals for Windows
 Task ("externals-windows")
+    .IsDependentOn ("externals-init")
     .WithCriteria (IsRunningOnWindows ())
     .WithCriteria (
         !FileExists ("native-builds/lib/windows/x86/libSkiaSharp.dll") ||
@@ -177,7 +186,6 @@ Task ("externals-windows")
     });
 
     // set up the gyp environment variables
-    AppendEnvironmentVariable ("PATH", DEPOT_PATH.FullPath);
     SetEnvironmentVariable ("SKIA_OUT", "");
     
     buildArch ("Win32", "x86", "x86");
@@ -186,6 +194,7 @@ Task ("externals-windows")
 
 // this builds the native C and C++ externals for Windows UWP
 Task ("externals-uwp")
+    .IsDependentOn ("externals-init")
     .IsDependentOn ("externals-angle-uwp")
     .WithCriteria (IsRunningOnWindows ())
     .WithCriteria (
@@ -215,7 +224,6 @@ Task ("externals-uwp")
     });
 
     // set up the gyp environment variables
-    AppendEnvironmentVariable ("PATH", DEPOT_PATH.FullPath);
     SetEnvironmentVariable ("SKIA_OUT", "");
 
     RunGyp ("skia_arch_type='x86_64' skia_gpu=1", "msvs");
@@ -230,6 +238,7 @@ Task ("externals-uwp")
 
 // this builds the native C and C++ externals for Mac OS X
 Task ("externals-osx")
+    .IsDependentOn ("externals-init")
     .WithCriteria (IsRunningOnMac ())
     .WithCriteria (
         !FileExists ("native-builds/lib/osx/libSkiaSharp.dylib"))
@@ -257,7 +266,6 @@ Task ("externals-osx")
     });
     
     // set up the gyp environment variables
-    AppendEnvironmentVariable ("PATH", DEPOT_PATH.FullPath);
     SetEnvironmentVariable ("SKIA_OUT", "");
     
     buildArch ("i386", "x86");
@@ -272,6 +280,7 @@ Task ("externals-osx")
 
 // this builds the native C and C++ externals for iOS
 Task ("externals-ios")
+    .IsDependentOn ("externals-init")
     .WithCriteria (IsRunningOnMac ())
     .WithCriteria (
         !FileExists ("native-builds/lib/ios/libSkiaSharp.framework/libSkiaSharp"))
@@ -300,7 +309,6 @@ Task ("externals-ios")
     });
     
     // set up the gyp environment variables
-    AppendEnvironmentVariable ("PATH", DEPOT_PATH.FullPath);
     SetEnvironmentVariable ("SKIA_OUT", "");
     
     RunGyp ("skia_os='ios' skia_arch_type='arm' armv7=1 arm_neon=0 skia_gpu=1 ios_sdk_version=8.0", "xcode");
@@ -325,6 +333,7 @@ Task ("externals-ios")
 
 // this builds the native C and C++ externals for tvOS
 Task ("externals-tvos")
+    .IsDependentOn ("externals-init")
     .WithCriteria (IsRunningOnMac ())
     .WithCriteria (
         !FileExists ("native-builds/lib/tvos/libSkiaSharp.framework/libSkiaSharp"))
@@ -353,7 +362,6 @@ Task ("externals-tvos")
     });
     
     // set up the gyp environment variables
-    AppendEnvironmentVariable ("PATH", DEPOT_PATH.FullPath);
     SetEnvironmentVariable ("SKIA_OUT", "");
     
     RunGyp ("skia_os='ios' skia_arch_type='arm' armv7=1 arm_neon=0 skia_gpu=1 ios_sdk_version=9.0", "xcode");
@@ -373,6 +381,7 @@ Task ("externals-tvos")
 
 // this builds the native C and C++ externals for Android
 Task ("externals-android")
+    .IsDependentOn ("externals-init")
     .WithCriteria (IsRunningOnMac ())
     .WithCriteria (
         !FileExists ("native-builds/lib/android/x86/libSkiaSharp.so") ||
@@ -389,7 +398,6 @@ Task ("externals-android")
     });
     
     // set up the gyp environment variables
-    AppendEnvironmentVariable ("PATH", DEPOT_PATH.FullPath);
     SetEnvironmentVariable ("GYP_DEFINES", "");
     SetEnvironmentVariable ("GYP_GENERATORS", "");
     SetEnvironmentVariable ("BUILDTYPE", "Release");
@@ -423,6 +431,7 @@ Task ("externals-android")
 
 // this builds the native C and C++ externals for Linux
 Task ("externals-linux")
+    .IsDependentOn ("externals-init")
     .WithCriteria (
 //        !FileExists ("native-builds/lib/linux/x86/libSkiaSharp.so") ||
         !FileExists ("native-builds/lib/linux/x64/libSkiaSharp.so"))
@@ -434,8 +443,6 @@ Task ("externals-linux")
     var ninja = DEPOT_PATH.CombineWithFilePath ("ninja").FullPath;
 
     // set up the gyp environment variables
-    AppendEnvironmentVariable ("PATH", DEPOT_PATH.FullPath);
-
     var targets = 
         "skia_lib pdf dng_sdk libSkKTX sksl piex raw_codec zlib libetc1 " +
         "libwebp_dsp_enc opts_avx opts_sse42 opts_hsw xml svg";
